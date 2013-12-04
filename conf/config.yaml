@@ -4,13 +4,14 @@ mysql_pass: prototype
 mysql_db: prototype
 mysql_host: localhost
 
-# Temp Configuration
+# Temp Configuration - Should become dynamic
 #allowed_galleries: catA, catB, catC/subB
 allowed_galleries: catA, catB, catC
 excluded_galleries: catC/subB
 
 # Basic Configuration
 gallery_base: /Users/dhart/snippits/images
+incoming_base: /Users/dhart/incoming
 image_persistence: 30 				# How long to persist the image in seconds
 
 # Advanced Configuration

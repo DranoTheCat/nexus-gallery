@@ -1,0 +1,18 @@
+# MySQL Parameters
+mysql_user: prototype
+mysql_pass: prototype
+mysql_db: prototype
+mysql_host: localhost
+
+# Temp Configuration
+#allowed_galleries: catA, catB, catC/subB
+allowed_galleries: catA, catB, catC
+excluded_galleries: catC/subB
+
+# Basic Configuration
+gallery_base: /Users/dhart/snippits/images
+image_persistence: 30 				# How long to persist the image in seconds
+
+# Advanced Configuration
+min_cache_count: 20				# Minimum number of images in the cache before regenerating
+cache_chunk_size: 60				# How many new images to load into the cache

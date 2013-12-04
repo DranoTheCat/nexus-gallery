@@ -6,9 +6,9 @@ A better picture frame, primarily for tablets
 Features:
   * Consistent image selection across all devices, based on time windows
   * Galleries
-  - Galleries are fully dynamic, based on the folders in the gallery\_base setting
-  - Subgalleries of unlimited nesting depth are supported
-  - Gallery configuration is fully discovered from the filesystem
+    - Galleries are fully dynamic, based on the folders in the gallery\_base setting
+    - Subgalleries of unlimited nesting depth are supported
+    - Gallery configuration is fully discovered from the filesystem
 
 Road Map:
   * slideshow.php -- Display the image slideshow, very minimal UI

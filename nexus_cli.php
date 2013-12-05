@@ -5,6 +5,6 @@
 
   # Main
   $ng = new NexusGallery();
-  print $ng->nextImage();
+  echo $ng->nextImage();
 
 ?>

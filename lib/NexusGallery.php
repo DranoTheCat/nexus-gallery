@@ -20,7 +20,11 @@ class NexusGallery {
 
     $next_image_result = $this->mysqli->query("SELECT filepath FROM nextImageCache WHERE displaytime >= (UNIX_TIMESTAMP() - " . $this->config['image_persistence'] . ") ORDER BY displaytime ASC LIMIT 1");
     $data = mysqli_fetch_assoc($next_image_result);
-    print $data['filepath'] . "\n"; #TODO - fix print
+    return $data['filepath'] . "\n";
+  }
+
+  public function getConfig($v) {
+    return $this->config[$v];
   }
 
 
@@ -38,7 +42,6 @@ class NexusGallery {
   protected function nextImageCacheCount() {
     $result = $this->mysqli->query("SELECT COUNT(id) as total FROM nextImageCache WHERE displaytime >= (UNIX_TIMESTAMP() - " . $this->config['image_persistence'] . ")");
     $data = mysqli_fetch_assoc($result);
-    print "DEBUG: " . $data['total'] . "\n";
     return $data['total'];
   }
 
@@ -68,7 +71,7 @@ class NexusGallery {
   }
 
   protected function generateNextImageCache() {
-    print "[ Generating Next Image Cache ... ]\n";
+    #echo "[ Generating Next Image Cache ... ]\n";  # TODO : Only in CLI mode
 
     $now = time();
 #    $this->mysqli->query("TRUNCATE TABLE nextImageCache");

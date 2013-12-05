@@ -7,11 +7,22 @@ class NexusGallery {
   protected $allowed_galleries;
   protected $excluded_galleries;
 
-  public function __construct($config) {
-    $this->config = $config;
-    $this->mysqli = new mysqli($config['mysql_host'], $config['mysql_user'], $config['mysql_pass'], $config['mysql_db']) or die($this->mysqli->error);
-    $this->allowed_galleries = preg_split('/,/', $config['allowed_galleries']);
-    $this->excluded_galleries = preg_split('/,/', $config['excluded_galleries']);
+  public function __construct() {
+    $this->loadConfig();
+    $this->mysqli = new mysqli($this->config['mysql_host'], $this->config['mysql_user'], $this->config['mysql_pass'], $this->config['mysql_db']) or die($this->mysqli->error);
+    $this->allowed_galleries = preg_split('/,/', $this->config['allowed_galleries']);
+    $this->excluded_galleries = preg_split('/,/', $this->config['excluded_galleries']);
+  }
+
+  protected function loadConfig() {
+    # YAML loading and fixup
+    $this->config = yaml_parse_file("conf/config.yaml");
+    $this->configChomp('allowed_galleries');
+    $this->configChomp('excluded_galleries');
+  }
+
+  protected function configChomp($v) { # Strips spaces so split will work correctly
+    $this->config[$v] = preg_replace("/\s+/", '', $this->config[$v]);
   }
 
   public function nextImage() {

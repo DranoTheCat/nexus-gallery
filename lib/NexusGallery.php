@@ -20,7 +20,7 @@ class NexusGallery {
 
     $next_image_result = $this->mysqli->query("SELECT filepath FROM nextImageCache WHERE displaytime >= (UNIX_TIMESTAMP() - " . $this->config['image_persistence'] . ") ORDER BY displaytime ASC LIMIT 1");
     $data = mysqli_fetch_assoc($next_image_result);
-    print $data['filepath'] . "\n";
+    print $data['filepath'] . "\n"; #TODO - fix print
   }
 
 
@@ -78,7 +78,7 @@ class NexusGallery {
     $used_images = Array(); 
     for ($i = 0; $i < $this->config['cache_chunk_size']; $i++) {
       $r = rand(0, sizeof($local_images) - 1);
-      while (isset($used_images[$r])) {
+      while (isset($used_images[$r])) { # This is fucking stupid.  Randomize the array instead then step through it.
         if (sizeof($used_images) == sizeof($local_images))
           $used_images = Array(); # Reset, need to have duplicates
         $r = rand(0, sizeof($local_images) - 1);

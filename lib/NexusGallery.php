@@ -14,6 +14,16 @@ class NexusGallery {
     $this->excluded_galleries = preg_split('/,/', $this->config['excluded_galleries']);
   }
 
+  public function nextImage() {
+    if ($this->nextImageCacheCount() < $this->config['min_cache_count'])
+      $this->generateNextImageCache();
+
+    $next_image_result = $this->mysqli->query("SELECT filepath FROM nextImageCache WHERE displaytime >= (UNIX_TIMESTAMP() - " . $this->config['image_persistence'] . ") ORDER BY displaytime ASC LIMIT 1");
+    $data = mysqli_fetch_assoc($next_image_result);
+    print $data['filepath'] . "\n";
+  }
+
+
   protected function loadConfig() {
     # YAML loading and fixup
     $this->config = yaml_parse_file("conf/config.yaml");
@@ -23,16 +33,6 @@ class NexusGallery {
 
   protected function configChomp($v) { # Strips spaces so split will work correctly
     $this->config[$v] = preg_replace("/\s+/", '', $this->config[$v]);
-  }
-
-  public function nextImage() {
-    if ($this->nextImageCacheCount() < $this->config['min_cache_count'])
-      $this->generateNextImageCache();
-
-    $next_image_result = $this->mysqli->query("SELECT filepath FROM nextImageCache WHERE displaytime >= (UNIX_TIMESTAMP() - " . $this->config['image_persistence'] . ") ORDER BY displaytime ASC LIMIT 1");
-    $data = mysqli_fetch_assoc($next_image_result);
-    print $data['filepath'] . "\n";
-
   }
 
   protected function nextImageCacheCount() {

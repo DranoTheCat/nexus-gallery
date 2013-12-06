@@ -26,6 +26,5 @@ A better picture frame, primarily for tablets
     + war.php       -- Image War!
 
 ## TODO ##
-  * Make stats database for images to hold thumbs up, down, pageviews, etc.  The key for these should be md5 sum of image contents?
-    + Could double as basic dupe prevention too
+  * Change slideshow to not poll every 2 seconds, but instead grab current image, next image, how many seconds until the time should change
   * Real-time decision of what subgalleries are allowable, instead of hard-coded in config

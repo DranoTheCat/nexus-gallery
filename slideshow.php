@@ -4,24 +4,55 @@
  * Slideshow app
  *************/
 
-include_once("lib/NexusGallery.php");
 
+require_once("lib/NexusGallery.php");
 $ng = new NexusGallery();
-$url = $ng->getConfig('gallery_url');
 
-$img = $ng->nextImage();
-$imgname = basename($img);
-$imgurl = $url . '/' . $img;
+if ($_GET['ajax']) {
+ $url = $ng->getConfig('gallery_url');
+ $img = $ng->nextImage();
 
-echo "<html><head><title>Nexus Gallery</title>";
-echo "<style>
+ $imgurl = $url . '/' . $img;
+ echo $imgurl;
+ return;
+}
+
+?>
+<html><head><title>Nexus Gallery</title>
+<style>
 html,body {
  margin: 0;
  padding: 0;
  background: black;
  text-color: white;
 }
-</style>";
-echo "</head><body>";
-echo "<img src=\"" . $imgurl . "\">";
+</style>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script type="text/javascript">
+$(function() {
+ slideshowAjax();
+});
+$.ajaxSetup({ cache: false });
+var ajaxInAction = false;
+var curImg = '';
+function slideshowAjax() {
+ if (ajaxInAction) { return; }
+ ajaxInAction = true;
+ $.ajax({
+  url: "slideshow.php?ajax=1",
+  success: function(result){
+   if (result != curImg) {
+    document.getElementById('image').src = result;
+    curImg = result;
+   }
+   setTimeout('slideshowAjax();', <? echo round($ng->getConfig('gallery_refresh_delay') * 1000); ?>);
+   ajaxInAction = false;
+  }
+ });
+}
+</script>
+</head><body>
+<?
+
+echo "<img src=\"loading.gif\" id=image>";
 echo "</body></html>";

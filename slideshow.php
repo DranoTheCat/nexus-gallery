@@ -8,15 +8,6 @@
 require_once("lib/NexusGallery.php");
 $ng = new NexusGallery();
 
-if ($_GET['ajax']) {
- $url = $ng->getConfig('gallery_url');
- $img = $ng->nextImage();
-
- $imgurl = $url . '/' . $img;
- echo $imgurl;
- return;
-}
-
 ?>
 <html><head><title>Nexus Gallery</title>
 <style>
@@ -39,13 +30,13 @@ function slideshowAjax() {
  if (ajaxInAction) { return; }
  ajaxInAction = true;
  $.ajax({
-  url: "slideshow.php?ajax=1",
+  url: "ajax.php",
   success: function(result){
    if (result != curImg) {
     document.getElementById('image').src = result;
     curImg = result;
    }
-   setTimeout('slideshowAjax();', <? echo round($ng->getConfig('gallery_refresh_delay') * 1000); ?>);
+//   setTimeout('slideshowAjax();', <? echo round($ng->getConfig('gallery_refresh_delay') * 1000); ?>);
    ajaxInAction = false;
   }
  });

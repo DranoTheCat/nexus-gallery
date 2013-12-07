@@ -154,13 +154,10 @@ class NexusGallery {
     $this->shuffle_assoc($final_files);
 
     $i = 0;
-    while ($i < $this->config['cache_chunk_size']) {
-      foreach ($final_files as $f => $v) {
-        $time_window = $now + ($i * $this->config['image_persistence']);
-        $this->mysqli->query("INSERT INTO nextImageCache (id, displaytime, filepath) VALUES ('', '" . $time_window . "', '" . addslashes($f) . "')") or die($this->mysqli->error);
-        $i++;
-        if ($i >= $this->config['cache_chunk_size']) break;
-      }
+    foreach ($final_files as $f => $v) {
+      $time_window = $now + ($i * $this->config['image_persistence']);
+      $this->mysqli->query("INSERT INTO nextImageCache (id, displaytime, filepath) VALUES ('', '" . $time_window . "', '" . addslashes($f) . "')") or die($this->mysqli->error);
+      $i++;
     }
   }
 }

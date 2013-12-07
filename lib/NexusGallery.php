@@ -168,6 +168,8 @@ class NexusGallery {
       $i++;
     }
 
+    # Unlock and delete
+    flock($fp, LOCK_UN);
     fclose($fp);
     unlink($fp);
   }

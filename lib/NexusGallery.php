@@ -123,7 +123,7 @@ class NexusGallery {
   protected function generateNextImageCache() {
     if ($this->debug) echo "[ Generating Next Image Cache ... ]\n"; 
 
-    $fp = fopen($this->config['flock_file'], "r+");
+    $fp = fopen($this->config['flock_file'], "w+");
     if (flock($fp, LOCK_EX)) {
       if ($this->debug) echo "* Received exclusive lock.\n"; 
     } else {
@@ -168,7 +168,8 @@ class NexusGallery {
       $i++;
     }
 
-    $fp = fopen($this->config['flock_file'], "r+");
+    fclose($fp);
+    unlink($fp);
   }
 }
 

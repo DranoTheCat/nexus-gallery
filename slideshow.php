@@ -7,6 +7,7 @@
 
 require_once("lib/NexusGallery.php");
 $ng = new NexusGallery();
+$url = $ng->getConfig('gallery_url');
 
 ?>
 <html><head><title>Nexus Gallery</title>
@@ -25,18 +26,18 @@ $(function() {
 });
 $.ajaxSetup({ cache: false });
 var ajaxInAction = false;
-var curImg = '';
+var url = '<?echo $url;?>';
 function slideshowAjax() {
  if (ajaxInAction) { return; }
  ajaxInAction = true;
  $.ajax({
   url: "ajax.php",
   success: function(result){
-   if (result != curImg) {
-    document.getElementById('image').src = result;
-    curImg = result;
-   }
-//   setTimeout('slideshowAjax();', <? echo round($ng->getConfig('gallery_refresh_delay') * 1000); ?>);
+   var jsonData = eval('(' + result + ')');
+   var curImg = url + '/' + jsonData[0];
+   var timeLeft = jsonData[1] * 1000;
+   document.getElementById('image').src = curImg;
+   setTimeout('slideshowAjax();', timeLeft);
    ajaxInAction = false;
   }
  });

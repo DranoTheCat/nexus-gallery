@@ -123,6 +123,14 @@ class NexusGallery {
   protected function generateNextImageCache() {
     if ($this->debug) echo "[ Generating Next Image Cache ... ]\n"; 
 
+    $fp = fopen($this->config['flock_file'], "r+");
+    if (flock($fp, LOCK_EX)) {
+      if ($this->debug) echo "* Received exclusive lock.\n"; 
+    } else {
+      if ($this->debug) echo "* Could not receive an exclusive lock; Aborting.\n";
+      return;
+    }
+
     $now = time();
 
     # Find all current filesystem images according to filters
@@ -162,6 +170,8 @@ class NexusGallery {
         if ($i >= $this->config['cache_chunk_size']) break;
       }
     }
+
+    $fp = fopen($this->config['flock_file'], "r+");
   }
 }
 

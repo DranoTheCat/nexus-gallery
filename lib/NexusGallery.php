@@ -171,7 +171,7 @@ class NexusGallery {
     # Unlock and delete
     flock($fp, LOCK_UN);
     fclose($fp);
-    unlink($fp);
+    unlink($this->config['flock_file']);
   }
 }
 

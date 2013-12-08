@@ -123,13 +123,7 @@ class NexusGallery {
   protected function generateNextImageCache() {
     if ($this->debug) echo "[ Generating Next Image Cache ... ]\n"; 
 
-    $fp = fopen($this->config['flock_file'], "w+");
-    if (flock($fp, LOCK_EX)) {
-      if ($this->debug) echo "* Received exclusive lock.\n"; 
-    } else {
-      if ($this->debug) echo "* Could not receive an exclusive lock; Aborting.\n";
-      return;
-    }
+    $this->mysqli->query("LOCK TABLES nextImageCache WRITE,imageCounters READ");
 
     $now = time();
 
@@ -168,10 +162,8 @@ class NexusGallery {
       $i++;
     }
 
-    # Unlock and delete
-    flock($fp, LOCK_UN);
-    fclose($fp);
-    unlink($this->config['flock_file']);
+    # Unlock  tables
+    $this->mysqli->query("UNLOCK TABLES");
   }
 }
 

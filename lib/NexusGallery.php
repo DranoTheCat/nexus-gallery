@@ -22,8 +22,16 @@ class NexusGallery {
     $this->mysqli->query("TRUNCATE TABLE nextImageCache");
   }
 
-  public function setAllowedGalleries($new_galleries) {
-    if ($this->debug) echo "[ Setting Allowed Galleries ]\n";
+  public function resetOverrides() {
+    if ($this->debug) echo "[ Resetting to base config ]\n";
+    unlink($this->config['working_directory'] . '/running-config.yaml');
+    unset($this->config);
+    unset($this->override);
+    $this->loadConfig();
+  }
+
+  public function setIncludedGalleries($new_galleries) {
+    if ($this->debug) echo "[ Setting Included Galleries ]\n";
     $this->included_galleries = $new_galleries;
     $this->saveOverrides();
     $this->truncateQueue();

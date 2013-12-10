@@ -11,12 +11,17 @@
 
   $galleries = $ng->listAllGalleries(); 
   output($galleries);
-  $ng->setAllowedGalleries(Array('Cats', 'DeviantArt', 'Grow'));
+  $ng->setIncludedGalleries(Array('Cats', 'DeviantArt', 'Grow'));
   $galleries = $ng->listAllGalleries(); 
   output($galleries);
 
   $ng->setImagePersistence(100);
+  echo "Quick sleep..\n";
+  sleep(2);
 
+  $ng->resetOverrides();
+  $galleries = $ng->listAllGalleries(); 
+  output($galleries);
 
 function output($galleries) {
   print "\nOutput Example:\n\n";

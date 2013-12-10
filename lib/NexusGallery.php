@@ -4,14 +4,13 @@ class NexusGallery {
 
   protected $mysqli;
   protected $config;
-  protected $allowed_galleries;
+  protected $override;
+  protected $included_galleries;
   protected $excluded_galleries;
 
-  public function __construct($debug = false) {
+  public function __construct($debug = 0) {
     $this->loadConfig();
     $this->mysqli = new mysqli($this->config['mysql_host'], $this->config['mysql_user'], $this->config['mysql_pass'], $this->config['mysql_db']) or die($this->mysqli->error);
-    $this->allowed_galleries = preg_split('/,/', $this->config['allowed_galleries']);
-    $this->excluded_galleries = preg_split('/,/', $this->config['excluded_galleries']);
     $this->debug = $debug;
     date_default_timezone_set('America/Los_Angeles');
   }
@@ -25,7 +24,8 @@ class NexusGallery {
 
   public function setAllowedGalleries($new_galleries) {
     if ($this->debug) echo "[ Setting Allowed Galleries ]\n";
-    $this->allowed_galleries = $new_galleries;
+    $this->included_galleries = $new_galleries;
+    $this->saveOverrides();
     $this->truncateQueue();
     $this->generateNextImageCache();
   }
@@ -33,35 +33,62 @@ class NexusGallery {
   public function setExcludedGalleries($new_galleries) {
     if ($this->debug) echo "[ Setting Excluded Galleries ]\n";
     $this->excluded_galleries = $new_galleries;
+    $this->saveOverrides();
     $this->truncateQueue();
     $this->generateNextImageCache();
   }
 
-  public function listGalleries($path = null) {
-    if ($this->debug) echo "[ Listing Galleries - $path ]\n";
+  public function thumbsUp() {
+    if ($this->debug) echo " [ Current Image Thumbs Up ++ ]\n";
+    list($image, $time_till_next) = $this->getImage();
+    $this->mysqli->query("UPDATE imageCounters SET thumbs_up = thumbs_up + 1 WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die($this->mysqli->error);
+  }
 
-    if (!$path) $path = $this->config['gallery_base'];
+  public function thumbsDown() {
+    if ($this->debug) echo " [ Current Image Thumbs Down ++ ]\n";
+    list($image, $time_till_next) = $this->getImage();
+    $this->mysqli->query("UPDATE imageCounters SET thumbs_down = thumbs_down + 1 WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die($this->mysqli->error);
+  }
+
+  public function listGalleries($path) {
+    if ($this->debug >= 2) echo "    + $path\n";
+
     $galleries = Array();
     if ($handle = opendir($path) or die()) {
       while (false !== ($entry = readdir($handle))) {
         if ($entry == '.' || $entry == '..') continue;
         if (is_dir($path . "/" . $entry)) {
-          $lpath = preg_replace(':' . $this->config['gallery_base'] . ':', '', $path); # without / or first entries fail
-          echo "debug: pushing $lpath -- $entry\n";
-          if ($lpath) {
-            $lpath = preg_replace(':^/:', '', $lpath);
+          $lpath = preg_replace(':' . $this->config['gallery_base'] . ':', '', $path);
+          $lpath = preg_replace(':^/:', '', $lpath);
+          if ($lpath)
             array_push($galleries, $lpath . '/' . $entry);
-          } else {
+          else
             array_push($galleries, $entry);
-          }
           $galleries = array_merge($galleries, $this->listGalleries($path . "/" . $entry));
         }
       }
     }
     return $galleries;
   }
+
+  public function listAllGalleries() {
+    if ($this->debug) echo "[ Listing Galleries ]\n";
+
+    $galleries = $this->listGalleries($this->config['gallery_base']);
+    asort($galleries);
+    $fgalleries = Array();
+    foreach ($galleries as $g)
+      $fgalleries[$g] = ($this->isGalleryEnabled($g)) ? 1 : 0;
+    return $fgalleries;
+  }
+
+  public function isGalleryEnabled($gallery) {
+    return (in_array($gallery, $this->included_galleries)) ? true : false;
+  }
   
-  public function setImagePersistence() {
+  public function setImagePersistence($time) {
+    $this->config['image_persistence'] = $time;
+    $this->saveOverrides();
   }
 
   public function debugQueue() {
@@ -116,13 +143,31 @@ class NexusGallery {
   }
 
 
+
+
   ### Protected Methods ###
 
   protected function loadConfig() {
     # YAML loading and fixup
     $this->config = yaml_parse_file("conf/config.yaml");
-    $this->configChomp('allowed_galleries');
+    if (file_exists($this->config['working_directory'] . '/running-config.yaml')) {
+      $this->override = yaml_parse_file($this->config['working_directory'] . '/running-config.yaml');
+      foreach ($this->override as $k => $v)
+        $this->config[$k] = $v;
+    }
+    $this->configChomp('included_galleries');
     $this->configChomp('excluded_galleries');
+    $this->included_galleries = preg_split('/,/', $this->config['included_galleries']);
+    $this->excluded_galleries = preg_split('/,/', $this->config['excluded_galleries']);
+    $this->saveOverrides();
+  }
+
+  protected function saveOverrides() {
+    if ($this->config) echo "[ Writing the working running-config.yaml to " . $this->config['working_directory'] . " ]\n";
+    $this->config['included_galleries'] = join(', ', $this->included_galleries);
+    $this->config['excluded_galleries'] = join(', ', $this->excluded_galleries);
+    yaml_emit_file($this->config['working_directory'] . '/running-config.yaml', $this->config);
+    chmod($this->config['working_directory'] . '/running-config.yaml', 0600);
   }
 
   protected function configChomp($v) { # Strips spaces so split will work correctly
@@ -144,10 +189,10 @@ class NexusGallery {
           $local_images = array_merge($local_images, $this->loadImages($path . "/" . $entry));
         } else {
           $lpath = preg_replace(':' . $this->config['gallery_base'] . '/:', '', $path); # /: to get rid of trailing slash
-          if (in_array($lpath, $this->allowed_galleries)) {
+          if (in_array($lpath, $this->included_galleries)) {
             array_push($local_images, $lpath . "/" . $entry);
           } else {
-            foreach ($this->allowed_galleries as $k => $v) {
+            foreach ($this->included_galleries as $k => $v) {
               if (preg_match(":^$v/\w+:", $lpath) && !in_array($lpath, $this->excluded_galleries)) {
                 array_push($local_images, $lpath . "/" . $entry);
               } 

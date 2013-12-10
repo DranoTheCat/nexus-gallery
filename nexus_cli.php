@@ -23,6 +23,8 @@
   $galleries = $ng->listAllGalleries(); 
   output($galleries);
 
+  #$ng->deleteImage(); # Warning!  Not been tested yet -- recycle bin
+
 function output($galleries) {
   print "\nOutput Example:\n\n";
   foreach ($galleries as $k => $v) {

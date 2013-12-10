@@ -17,9 +17,17 @@ class NexusGallery {
 
   ### Public Methods
 
+  public function deleteImage() {
+    list($image, $time_till_next) = $this->getImage();
+    if ($this->debug) echo "[ Deleting " . $image . " to " . $this->config['trash_directory'] . " ]\n";
+    system("mv \"$image\" " . $this->config['trash_directory']) or die("Couldn't move file");
+    return true;
+  }
+
   public function truncateQueue() {
     if ($this->debug) echo "[ Truncating nextImageCache table ]\n";
-    $this->mysqli->query("TRUNCATE TABLE nextImageCache");
+    $this->mysqli->query("TRUNCATE TABLE nextImageCache") or die ($this->mysqli->error);
+    return true;
   }
 
   public function resetOverrides() {
@@ -28,6 +36,7 @@ class NexusGallery {
     unset($this->config);
     unset($this->override);
     $this->loadConfig();
+    return true;
   }
 
   public function setIncludedGalleries($new_galleries) {
@@ -36,6 +45,7 @@ class NexusGallery {
     $this->saveOverrides();
     $this->truncateQueue();
     $this->generateNextImageCache();
+    return true;
   }
 
   public function setExcludedGalleries($new_galleries) {
@@ -44,18 +54,21 @@ class NexusGallery {
     $this->saveOverrides();
     $this->truncateQueue();
     $this->generateNextImageCache();
+    return true;
   }
 
   public function thumbsUp() {
     if ($this->debug) echo " [ Current Image Thumbs Up ++ ]\n";
     list($image, $time_till_next) = $this->getImage();
     $this->mysqli->query("UPDATE imageCounters SET thumbs_up = thumbs_up + 1 WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die($this->mysqli->error);
+    return true;
   }
 
   public function thumbsDown() {
     if ($this->debug) echo " [ Current Image Thumbs Down ++ ]\n";
     list($image, $time_till_next) = $this->getImage();
     $this->mysqli->query("UPDATE imageCounters SET thumbs_down = thumbs_down + 1 WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die($this->mysqli->error);
+    return true;
   }
 
   public function listGalleries($path) {
@@ -97,6 +110,7 @@ class NexusGallery {
   public function setImagePersistence($time) {
     $this->config['image_persistence'] = $time;
     $this->saveOverrides();
+    return true;
   }
 
   public function debugQueue() {

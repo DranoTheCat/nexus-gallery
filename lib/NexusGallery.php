@@ -16,6 +16,54 @@ class NexusGallery {
     date_default_timezone_set('America/Los_Angeles');
   }
 
+  ### Public Methods
+
+  public function truncateQueue() {
+    if ($this->debug) echo "[ Truncating nextImageCache table ]\n";
+    $this->mysqli->query("TRUNCATE TABLE nextImageCache");
+  }
+
+  public function setAllowedGalleries($new_galleries) {
+    if ($this->debug) echo "[ Setting Allowed Galleries ]\n";
+    $this->allowed_galleries = $new_galleries;
+    $this->truncateQueue();
+    $this->generateNextImageCache();
+  }
+
+  public function setExcludedGalleries($new_galleries) {
+    if ($this->debug) echo "[ Setting Excluded Galleries ]\n";
+    $this->excluded_galleries = $new_galleries;
+    $this->truncateQueue();
+    $this->generateNextImageCache();
+  }
+
+  public function listGalleries($path = null) {
+    if ($this->debug) echo "[ Listing Galleries - $path ]\n";
+
+    if (!$path) $path = $this->config['gallery_base'];
+    $galleries = Array();
+    if ($handle = opendir($path) or die()) {
+      while (false !== ($entry = readdir($handle))) {
+        if ($entry == '.' || $entry == '..') continue;
+        if (is_dir($path . "/" . $entry)) {
+          $lpath = preg_replace(':' . $this->config['gallery_base'] . ':', '', $path); # without / or first entries fail
+          echo "debug: pushing $lpath -- $entry\n";
+          if ($lpath) {
+            $lpath = preg_replace(':^/:', '', $lpath);
+            array_push($galleries, $lpath . '/' . $entry);
+          } else {
+            array_push($galleries, $entry);
+          }
+          $galleries = array_merge($galleries, $this->listGalleries($path . "/" . $entry));
+        }
+      }
+    }
+    return $galleries;
+  }
+  
+  public function setImagePersistence() {
+  }
+
   public function debugQueue() {
     if ($this->debug) echo "* debugQueue - We have " . $this->nextImageCacheCount() . " images left in the queue.\n";
 
@@ -67,6 +115,8 @@ class NexusGallery {
     return $this->config[$v];
   }
 
+
+  ### Protected Methods ###
 
   protected function loadConfig() {
     # YAML loading and fixup

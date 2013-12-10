@@ -6,7 +6,10 @@
   # Main
   $ng = new NexusGallery(true); # True so we get debug
 
-  $ng->debugQueue();
-  list($image, $time_till_next) = $ng->getImage();
+#  $ng->debugQueue();
+#  list($image, $time_till_next) = $ng->getImage();
+  $galleries = $ng->listGalleries(); 
+
+  print_r($galleries);
 
 ?>

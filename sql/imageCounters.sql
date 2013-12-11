@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Dec 07, 2013 at 04:39 PM
+-- Generation Time: Dec 10, 2013 at 11:27 PM
 -- Server version: 5.5.33a-MariaDB
 -- PHP Version: 5.4.17
 
@@ -33,8 +33,9 @@ CREATE TABLE IF NOT EXISTS `imageCounters` (
   `thumbs_down` int(11) NOT NULL,
   `num_views` int(11) NOT NULL,
   `last_view` int(11) NOT NULL,
+  `tags` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=74 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=75 ;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

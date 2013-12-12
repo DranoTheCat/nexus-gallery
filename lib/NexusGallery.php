@@ -17,9 +17,81 @@ class NexusGallery {
 
   ### Public Methods
 
+  public function deleteImage() {
+    list($image, $time_till_next) = $this->getImage();
+    if ($this->debug) echo "[ Deleting " . $image . " to " . $this->config['trash_directory'] . " ]\n";
+    system("mv \"$image\" \"" . $this->config['trash_directory'] . "\"") or die("Couldn't move file");
+    return true;
+  }
+
+  public function addTag($tag) {
+    list($image, $time_till_next) = $this->getImage();
+    if ($this->debug) echo "[ Adding '$tag' tag for " . $image . " ]\n";
+    $result = $this->mysqli->query("SELECT tags FROM imageCounters WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die ($this->mysqli->error);
+    if (mysqli_num_rows($result) > 0) {
+      $data = mysqli_fetch_assoc($result); 
+      $tags = explode(';', $data['tags']);
+      array_push($tags, $tag);
+      $tags = array_unique($tags);
+      $tag_string = join(';', $tags);
+      $tag_string = preg_replace("/^;/", "", $tag_string);
+      if ($this->debug) echo "    * Current tags: $tag_string\n";
+      $this->mysqli->query("UPDATE imageCounters SET tags='" . addslashes($tag_string) . "' WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die ($this->mysqli->error);
+    } else {
+      if ($this->debug) echo "    * No current tags set; doing init.\n";
+      $this->mysqli->query("UPDATE imageCounters SET tags='" . addslashes($tag_string) . "' WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die ($this->mysqli->error);
+    }
+    return true;
+  }
+
+  public function removeTag($tag) {
+    list($image, $time_till_next) = $this->getImage();
+    if ($this->debug) echo "[ Removing '$tag' tag for " . $image . " ]\n";
+    $result = $this->mysqli->query("SELECT tags FROM imageCounters WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die ($this->mysqli->error);
+    if (mysqli_num_rows($result) > 0) {
+      $data = mysqli_fetch_assoc($result); 
+      if ($data['tags']) {
+        $tags = explode(';', $data['tags']);
+        $tags = array_diff($tags, [$tag]);
+        $tag_string = join(';', $tags);
+        $tag_string = preg_replace("/^;/", "", $tag_string);
+        if ($this->debug) echo "    * Current tags: $tag_string\n";
+        $this->mysqli->query("UPDATE imageCounters SET tags='" . addslashes($tag_string) . "' WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die ($this->mysqli->error);
+      } else {
+        if ($this->Debug) echo "  * Image has no current tags.\n";
+      }
+    }
+    return true;
+  }
+
+  public function listAllTags() {
+    if ($this->debug) echo "[ Retrieving ALL image tags ]\n";
+    $tags = Array();
+    $result = $this->mysqli->query("SELECT tags FROM imageCounters") or die ($this->mysqli->error);
+    while ($row = mysqli_fetch_assoc($result)) {
+      $tags = array_merge($tags, explode(';', $row['tags']));
+    }
+    sort($tags);
+    return array_filter(array_unique($tags));
+  }
+
+  public function listImageTags() {
+    list($image, $time_till_next) = $this->getImage();
+    if ($this->debug) echo "[ Retrieving tags for " . $image . " ]\n";
+    $result = $this->mysqli->query("SELECT tags FROM imageCounters WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die ($this->mysqli->error);
+    if (mysqli_num_rows($result) > 0) {
+      $data = mysqli_fetch_assoc($result); 
+      $tags = Array();
+      if ($data['tags'])
+        $tags = explode(';', $data['tags']);
+      return $tags; 
+    }
+  }
+
   public function truncateQueue() {
     if ($this->debug) echo "[ Truncating nextImageCache table ]\n";
-    $this->mysqli->query("TRUNCATE TABLE nextImageCache");
+    $this->mysqli->query("TRUNCATE TABLE nextImageCache") or die ($this->mysqli->error);
+    return true;
   }
 
   public function resetOverrides() {
@@ -28,6 +100,7 @@ class NexusGallery {
     unset($this->config);
     unset($this->override);
     $this->loadConfig();
+    return true;
   }
 
   public function setIncludedGalleries($new_galleries) {
@@ -36,6 +109,7 @@ class NexusGallery {
     $this->saveOverrides();
     $this->truncateQueue();
     $this->generateNextImageCache();
+    return true;
   }
 
   public function setExcludedGalleries($new_galleries) {
@@ -44,18 +118,21 @@ class NexusGallery {
     $this->saveOverrides();
     $this->truncateQueue();
     $this->generateNextImageCache();
+    return true;
   }
 
   public function thumbsUp() {
     if ($this->debug) echo " [ Current Image Thumbs Up ++ ]\n";
     list($image, $time_till_next) = $this->getImage();
     $this->mysqli->query("UPDATE imageCounters SET thumbs_up = thumbs_up + 1 WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die($this->mysqli->error);
+    return true;
   }
 
   public function thumbsDown() {
     if ($this->debug) echo " [ Current Image Thumbs Down ++ ]\n";
     list($image, $time_till_next) = $this->getImage();
     $this->mysqli->query("UPDATE imageCounters SET thumbs_down = thumbs_down + 1 WHERE filepath='" . addslashes($image) . "' LIMIT 1") or die($this->mysqli->error);
+    return true;
   }
 
   public function listGalleries($path) {
@@ -97,6 +174,14 @@ class NexusGallery {
   public function setImagePersistence($time) {
     $this->config['image_persistence'] = $time;
     $this->saveOverrides();
+    return true;
+  }
+
+  public function unsortImage() {
+    list($image, $time_till_next) = $this->getImage();
+    if ($this->debug) echo "* Moving current image " . $image  . " back into " . $this->config['incoming_base'] . "\n";
+    system("mv \"$image\" \"" . $this->config['incoming_base'] . "\"") or die("Couldn't move file");
+    return true;
   }
 
   public function debugQueue() {
@@ -134,7 +219,7 @@ class NexusGallery {
       }
     } else { # Image hasn't been seen before
       if ($this->debug) echo "* " . $data['filepath'] . " has never been viewed before.\n";
-      $this->mysqli->query("INSERT INTO imageCounters (id, filepath, thumbs_up, thumbs_down, num_views, last_view) VALUES ('', '" . addslashes($data['filepath']) . "', 0, 0, 1, UNIX_TIMESTAMP())") or die($this->mysqli->error);;
+      $this->mysqli->query("INSERT INTO imageCounters (id, filepath, thumbs_up, thumbs_down, num_views, last_view, tags) VALUES ('', '" . addslashes($data['filepath']) . "', 0, 0, 1, UNIX_TIMESTAMP(), '')") or die($this->mysqli->error);;
     } 
 
     $time_left = $data['displaytime'] + $this->config['image_persistence'] - $now;

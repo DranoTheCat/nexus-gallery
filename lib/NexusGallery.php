@@ -1,5 +1,7 @@
 <?php
 
+// TODO: method for get number of views
+
 class NexusGallery {
 
   protected $mysqli;
@@ -52,7 +54,7 @@ class NexusGallery {
       $data = mysqli_fetch_assoc($result); 
       if ($data['tags']) {
         $tags = explode(';', $data['tags']);
-        $tags = array_diff($tags, [$tag]);
+        $tags = array_diff($tags, array($tag));
         $tag_string = join(';', $tags);
         $tag_string = preg_replace("/^;/", "", $tag_string);
         if ($this->debug) echo "    * Current tags: $tag_string\n";
@@ -256,7 +258,7 @@ class NexusGallery {
   }
 
   protected function saveOverrides() {
-    if ($this->config) echo "[ Writing the working running-config.yaml to " . $this->config['working_directory'] . " ]\n";
+    if ($this->debug) echo "[ Writing the working running-config.yaml to " . $this->config['working_directory'] . " ]\n";
     $this->config['included_galleries'] = join(', ', $this->included_galleries);
     $this->config['excluded_galleries'] = join(', ', $this->excluded_galleries);
     yaml_emit_file($this->config['working_directory'] . '/running-config.yaml', $this->config);

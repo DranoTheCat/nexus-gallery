@@ -1,4 +1,4 @@
-<?
+<?php
 
 /*************
  * Slideshow app
@@ -50,7 +50,7 @@ $(function() {
 });
 $.ajaxSetup({ cache: false });
 var ajaxInAction = false;
-var url = '<?echo $url;?>';
+var url = '<?php echo $url;?>';
 var myImg = null;
 function slideshowAjax() {
  if (ajaxInAction) { return; }
@@ -91,7 +91,7 @@ function testLoop() {
 }
 </script>
 </head><body>
-<?
+<?php
 
 echo "<img src=\"loading.gif\" id=image>";
 #echo "<div id=imagediv></div>";

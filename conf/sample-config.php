@@ -1,4 +1,4 @@
-<?php5
+<?php
 
 # MySQL Parameters
 $conf['mysql_user'] =  'nexusgallery';

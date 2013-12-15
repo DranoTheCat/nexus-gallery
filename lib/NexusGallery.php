@@ -11,9 +11,9 @@ class NexusGallery {
   protected $excluded_galleries;
 
   public function __construct($debug = 0) {
+    $this->debug = $debug;
     $this->loadConfig();
     $this->mysqli = new mysqli($this->config['mysql_host'], $this->config['mysql_user'], $this->config['mysql_pass'], $this->config['mysql_db']) or die($this->mysqli->error);
-    $this->debug = $debug;
     date_default_timezone_set('America/Los_Angeles');
   }
 
@@ -243,10 +243,11 @@ class NexusGallery {
   ### Protected Methods ###
 
   protected function loadConfig() {
-    # YAML loading and fixup
-    $this->config = yaml_parse_file("conf/config.yaml");
-    if (file_exists($this->config['working_directory'] . '/running-config.yaml')) {
-      $this->override = yaml_parse_file($this->config['working_directory'] . '/running-config.yaml');
+    require_once("conf/config.php");
+    $this->config = $conf;
+
+    if (file_exists($this->config['working_directory'] . '/running-config.json')) {
+      $this->override = json_decode($this->loadFile($this->config['working_directory'] . '/running-config.json'));
       foreach ($this->override as $k => $v)
         $this->config[$k] = $v;
     }
@@ -257,12 +258,25 @@ class NexusGallery {
     $this->saveOverrides();
   }
 
+  protected function loadFile($file) {
+    $fp = fopen($file, 'r');
+    $content = fread($fp, filesize($file));
+    fclose($fp);
+    return $content;
+  }
+
+  protected function writeFile($file, $content) {
+    $fp = fopen($file, 'w');
+    fwrite($fp, $content);
+    fclose($fp);
+  }
+
   protected function saveOverrides() {
-    if ($this->debug) echo "[ Writing the working running-config.yaml to " . $this->config['working_directory'] . " ]\n";
+    if ($this->debug) echo "[ Writing the working running-config.json to " . $this->config['working_directory'] . " ]\n";
     $this->config['included_galleries'] = join(', ', $this->included_galleries);
     $this->config['excluded_galleries'] = join(', ', $this->excluded_galleries);
-    yaml_emit_file($this->config['working_directory'] . '/running-config.yaml', $this->config);
-    chmod($this->config['working_directory'] . '/running-config.yaml', 0600);
+    $this->writeFile($this->config['working_directory'] . '/running-config.json', json_encode($this->config));
+    chmod($this->config['working_directory'] . '/running-config.json', 0600);
   }
 
   protected function configChomp($v) { # Strips spaces so split will work correctly

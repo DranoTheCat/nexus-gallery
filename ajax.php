@@ -12,8 +12,14 @@ if ($command) {
 } else
  echo json();
 
-function ajax_test($string,$delay = 10) {
- echo json(array('mode'=>'display', 'string'=>"This is a test", 'delay'=>$delay));
+function ajax_populateGalleries() {
+ global $ng;
+ $galleries = $ng->listAllGalleries();
+ echo json(array('mode'=>'populateGalleries','galleries'=>$galleries));
+}
+
+function ajax_test() {
+ echo json(array('mode'=>'display', 'string'=>"This is a test", 'delay'=>10));
 }
 
 function ajax_error($string) {

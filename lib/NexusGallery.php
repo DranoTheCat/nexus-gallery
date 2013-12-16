@@ -145,8 +145,8 @@ class NexusGallery {
       while (false !== ($entry = readdir($handle))) {
         if ($entry == '.' || $entry == '..') continue;
         if (is_dir($path . "/" . $entry)) {
-          $lpath = preg_replace(':' . $this->config['gallery_base'] . ':', '', $path);
-          $lpath = preg_replace(':^/:', '', $lpath);
+          $lpath = preg_replace(';' . $this->config['gallery_base'] . ';', '', $path);
+          $lpath = preg_replace(';^/;', '', $lpath);
           if ($lpath)
             array_push($galleries, $lpath . '/' . $entry);
           else
@@ -297,7 +297,7 @@ class NexusGallery {
         if (is_dir($path . "/" . $entry)) {
           $local_images = array_merge($local_images, $this->loadImages($path . "/" . $entry));
         } else {
-          $lpath = preg_replace(':' . $this->config['gallery_base'] . '/:', '', $path); # /: to get rid of trailing slash
+          $lpath = preg_replace(';' . $this->config['gallery_base'] . '/;', '', $path); # /: to get rid of trailing slash
           if (in_array($lpath, $this->included_galleries)) {
             array_push($local_images, $lpath . "/" . $entry);
           } else {

@@ -3,8 +3,8 @@ require_once("lib/NexusGallery.php");
 global $ng;
 $ng = new NexusGallery();
 
-
-$command = $_GET['command'];
+$command = false;
+if (isset($_GET['command'])) $command = $_GET['command'];
 
 if ($command) {
  if (function_exists('ajax_'.$command)) call_user_func('ajax_'.$command);

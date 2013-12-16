@@ -22,27 +22,15 @@ html,body {
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script type="text/javascript">
 function scaleSize(currW, currH){
- var maxW = $(document).width();
- var maxH = $(document).height();
- var ratio = currH / currW;
- if (ratio > 1){
-  if (currH > maxH) {
-   currH = maxH;
-   currW = currH / ratio;
-  } else if (currW > maxW) {
-   currW = maxW;
-   currH = currW * ratio;
-  }
+ var maxW = document.body.clientWidth - 10;
+ var maxH = document.body.clientHeight - 10;
+ var ratioW = maxW / currW; // Ratio needed to get width to 100%
+ var ratioH = maxH / currH; // Ratio needed to get height to 100%
+ if (ratioW > ratioH) {     // We should always use the lesser ratio
+   return [currW*ratioH, currH*ratioH];
  } else {
-  if (currW > maxW) {
-   currW = maxW;
-   currH = currW * ratio;
-  } else if (currH > maxH) {
-   currH = maxH;
-   currW = currH / ratio;
-  }
+   return [currW*ratioW, currH*ratioW];
  }
- return [currW, currH];
 }
 $(function() {
  slideshowAjax();
@@ -93,6 +81,8 @@ function testLoop() {
 </head><body>
 <?php
 
+echo "<table border=0 cellpadding=0 width=100% height=100%><tr height=100% valign=center><td width=100% align=center>";
 echo "<img src=\"loading.gif\" id=image>";
+echo "</td></tr></table>";
 #echo "<div id=imagediv></div>";
 echo "</body></html>";

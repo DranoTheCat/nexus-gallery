@@ -96,6 +96,15 @@ class NexusGallery {
     return true;
   }
 
+  public function resetImageCounters($gallery = 'all') {
+    if ($gallery == 'all') {
+      $this->mysqli->query("TRUNCATE TABLE imageCounters") or die ($this->mysqli->error);
+    } else {
+      # TODO: This bit is untested
+      $this->mysqli->query("DELETE FROM imageCounters WHERE filepath LIKE '%" . addslashes($gallery) . "%'") or die ($this->mysqli->error);
+    }
+  }
+
   public function resetOverrides() {
     if ($this->debug) echo "[ Resetting to base config ]\n";
     unlink($this->config['working_directory'] . '/running-config.yaml');
@@ -255,7 +264,7 @@ class NexusGallery {
     $this->configChomp('excluded_galleries');
     $this->included_galleries = preg_split('/,/', $this->config['included_galleries']);
     $this->excluded_galleries = preg_split('/,/', $this->config['excluded_galleries']);
-    $this->saveOverrides();
+//    $this->saveOverrides();
   }
 
   protected function loadFile($file) {
@@ -333,6 +342,8 @@ class NexusGallery {
 
     # Find all current filesystem images according to filters
     $local_images = $this->loadImages($this->config['gallery_base']);
+    # Temp fix for thex until TODO: Make the seen stats per gallery instead of all
+    shuffle($local_images);
 
     # First, grab the imageCounters for known files
     $seen_files = Array();

@@ -48,7 +48,8 @@ function slideshowAjax() {
   success: function(result){
    var jsonData = eval('(' + result + ')');
    var curImg = url + '/' + jsonData[0];
-   var timeLeft = jsonData[1] * 1000;
+   var timeLeft = (jsonData[1] * 1000) + 1000;
+   if (!timeLeft) { timeLeft = 1000; }
    myImg = $('<img id="dynamic">');
 
 //myImg.on('load', function(){

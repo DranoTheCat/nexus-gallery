@@ -46,7 +46,7 @@ function timerAjax() {
 var displayId = 1;
 function control(command,param) {
  $.ajax({
-  url: "ajax.php?command=" + command,
+  url: "ajax.php?command=" + command + "&param=" + param,
   success: function(result){
    var jsonData = eval('(' + result + ')');
    if (jsonData['mode'] == 'alert') {
@@ -58,7 +58,7 @@ function control(command,param) {
     var mystr = '';
     $.each(jsonData['galleries'], function(k, v) {
      if (v) {
-      mystr = mystr + '<a href="#" onclick="removeGallery(\'removeGallery\',\'' + k + '\'); return false;" style="color: purple;">' + k + '</a><br>';
+      mystr = mystr + '<a href="#" onclick="control(\'removeGallery\',\'' + k + '\'); return false;" style="color: purple;">' + k + '</a><br>';
      } else {
       mystr = mystr + '<a href="#" onclick="control(\'addGallery\',\'' + k + '\'); return false;" style="color: green;">' + k + '</a><br>';
      }
@@ -78,6 +78,6 @@ function removeDiv(id) {
 <center><h1><div id=image></div></h1></center>
 <center><h3><div id=taglist></div></h3></center>
 <center><h3><div id=data></div></h3></center>
-<center>[ <a href="#" onclick="control('test'); return false;">Test</a> | <a href="#" onclick="control('populateGalleries'); return false;">Galleries</a> ]</center>
+<center>[ <a href="#" onclick="control('populateGalleries'); return false;">Galleries</a> | <a href="#" onclick="control('emptyQueue');">Empty Queue</a> | <a href="#" onclick="control('resetCounters');">Reset Counters</a> | <a href="#" onclick="control('thumbsUp'); return false;">+</a> | <a href="#" onclick="control('thumbsDown'); return false;">-</a> ]</center>
 <center><div id=gallerylist></div></center>
 </body></html>

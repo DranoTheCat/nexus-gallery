@@ -8,6 +8,7 @@
 
 #  $ng->debugQueue();
   list($image, $time_till_next) = $ng->getImage();
+  $ng->debugQueue();
   echo "Image: $image\n";
 
 #  $galleries = $ng->listAllGalleries(); 
@@ -21,8 +22,8 @@
 #  sleep(2);
 
 #  $ng->resetOverrides();
-  $galleries = $ng->listAllGalleries(); 
-  output($galleries);
+#  $galleries = $ng->listAllGalleries(); 
+#  output($galleries);
 
   #$ng->deleteImage(); # Warning!  Not been tested yet -- recycle bin
 /*

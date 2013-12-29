@@ -19,10 +19,12 @@ class NexusGallery {
 
   ### Public Methods
 
-  public function deleteImage() {
-    list($image, $time_till_next) = $this->getImage();
+  public function deleteImage($image = null) {
+    if (!$image)
+      list($image, $time_till_next) = $this->getImage();
     if ($this->debug) echo "[ Deleting " . $image . " to " . $this->config['trash_directory'] . " ]\n";
-    system("mv \"$image\" \"" . $this->config['trash_directory'] . "\"") or die("Couldn't move file");
+    $filename = basename($image);
+    rename($image, $this->config['trash_directory'] . "/" . $filename);
     return true;
   }
 

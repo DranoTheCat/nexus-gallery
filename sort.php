@@ -10,6 +10,10 @@ $image = $ng->getImageToSort();
 
 <html><head><title>Nexus Sort</title>
 <style>
+a {
+ color: white;
+ text-decoration: none;
+}
 body,html {
  margin: 0;
  padding: 0;
@@ -60,7 +64,7 @@ a.controls {
 <script type="text/javascript">
 function scaleSize(currW, currH){
  var maxW = document.body.clientWidth - 10;
- var maxH = document.body.clientHeight - 10;
+ var maxH = document.body.clientHeight - 200;
  var ratioW = maxW / currW; // Ratio needed to get width to 100%
  var ratioH = maxH / currH; // Ratio needed to get height to 100%
  if (ratioW > ratioH) {     // We should always use the lesser ratio
@@ -82,7 +86,7 @@ function moveImage(file, dest) {
   //alert("ajax.php?mode=moveImage&file="+file+"&dest="+dest);
   ajaxInAction = true;
   $.ajax({
-    url: "ajax.php?mode=moveImage&file="+file+"&dest="+dest, success: function() {
+    url: "ajax.php?command=moveImage&file="+file+"&dest="+dest, success: function() {
       location.reload();
   }});
 }
@@ -104,7 +108,7 @@ function removeDiv(id) {
       <?php
   $str = "";
   foreach ($ng->listAllGalleries() as $k => $v) {
-    $str .= "[ <a href=# onclick=\"moveImage('" . $image . "', '" . $ng->getConfig('gallery_base') . "/" . $k . "');\">" . $k . "</a> ] ";  
+    $str .= "[&nbsp;<a href=# onclick=\"moveImage('" . $image . "', '" . $ng->getConfig('gallery_base') . "/" . $k . "');\">" . $k . "</a>&nbsp;] ";  
   }
   echo $str;
        ?>

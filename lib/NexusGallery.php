@@ -167,11 +167,8 @@ class NexusGallery {
     return $galleries;
   }
 
-  public function moveImage($image = 'current', $dest) {
+  public function moveImage($image, $dest) {
     if ($this->debug) echo "[ Moving $image to $dest ]";
-
-    if ($image == 'current')
-      list($image, $time_till_next) = $this->getImage();
 
     $filename = basename($image);
     rename($image, $dest . "/" . $filename);

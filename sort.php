@@ -110,7 +110,7 @@ function removeDiv(id) {
   foreach ($ng->listAllGalleries() as $k => $v) {
     $str .= "[&nbsp;<a href=# onclick=\"moveImage('" . $image . "', '" . $ng->getConfig('gallery_base') . "/" . $k . "');\">" . $k . "</a>&nbsp;] ";  
   }
-  $str .= "[&nbsp;<a href=# onclick=\"moveImage('" . $image . "', '" . $ng->getConfig('trash_directory') . "');\">DELETE</a>&nbsp;]";
+  $str .= "[&nbsp;<a href=# onclick=\"moveImage('" . $image . "', '" . $ng->getConfig('trash_directory') . "');\">TRASH</a>&nbsp;]";
   echo $str;
        ?>
     </td>
@@ -127,7 +127,7 @@ function removeDiv(id) {
   foreach ($ng->listAllGalleries() as $k => $v) {
     $str .= "[ $k ] ";  
   }
-  $str .= "[&nbsp;<a href=# onclick=\"deleteImage('" . $image . "');\">DELETE</a>&nbsp;]";
+  $str .= "[&nbsp;<a href=# onclick=\"deleteImage('" . $image . "');\">TRASH</a>&nbsp;]";
   echo $str;
        ?>
     </td>

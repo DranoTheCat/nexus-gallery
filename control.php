@@ -48,7 +48,7 @@ body,html {
 </style>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script type="text/javascript">
-var image_persistence = <? echo $ng->getConfig('image_persistence'); ?>;
+var image_persistence = <?php echo $ng->getConfig('image_persistence'); ?>;
 $(function() {
  timerAjax();
  control('populateGalleries');

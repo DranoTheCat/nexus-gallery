@@ -177,12 +177,12 @@ class NexusGallery {
     rename($image, $dest . "/" . $filename);
   }
 
-  public function getImageToSort($base = 'default') {
-    if ($base == 'default')
-      $base = $this->config['incoming_base'];
-    if ($this->debug) echo "[ Retrieving next image to sort for $base ]\n";
+  public function getImageToSort($path = 'default') {
+    if ($path == 'default')
+      $path = $this->config['incoming_base'];
+    if ($this->debug) echo "[ Retrieving next image to sort for $path ]\n";
 
-    if ($handle = opendir($base) or die()) {
+    if ($handle = opendir($path) or die()) {
       while (false !== ($entry = readdir($handle))) {
         if ($entry == '.' || $entry == '..') continue;
         if (is_dir($path . "/" . $entry)) {
@@ -191,9 +191,9 @@ class NexusGallery {
             return $next;
         } else {
           if ($path)
-            return $this->config['incoming_base'] . "/" . $path . "/" . $entry;
+            return $path . "/" . $entry;
           else
-            return $this->config['incoming_base'] . "/" . $entry;
+            return $entry;
         }
       }
     }

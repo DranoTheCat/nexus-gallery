@@ -45,6 +45,15 @@ body,html {
  border: 1px solid #bbb;
  width: 40px;
 }
+
+.controls {
+ color: #444;
+ text-decoration: none;
+}
+
+a.controls {
+ color: #888;
+}
 </style>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script type="text/javascript">
@@ -94,19 +103,36 @@ function control(command,param) {
    } else if (jsonData['mode'] == 'display') {
     doDisplay(jsonData['string'], jsonData['delay']);
    } else if (jsonData['mode'] == 'populateGalleries') {
-    var mystr = '<table><tr><td>';
-    $.each(jsonData['galleries'], function(k, v) {
-     if (v) {
-      mystr = mystr + '<a href="#" onclick="control(\'removeGallery\',\'' + k + '\'); return false;" style="color: purple;">' + k + '</a><br>';
-     } else {
-      mystr = mystr + '<a href="#" onclick="control(\'addGallery\',\'' + k + '\'); return false;" style="color: green;">' + k + '</a><br>';
-     }
-    });
-    mystr = mystr + '</td></tr></table>';
-    $('#gallerylist').html(mystr);
+    populateGalleries(jsonData['galleries']);
    }
   }
  });
+}
+
+function populateGalleries(galleries) {
+ var mystr = '<table border=2><tr><td>';
+ var mystr = '<table>';
+ $.each(galleries, function(k, v) {
+  if (v) {
+   var funcName = 'removeGallery';
+   var initColor = 'purple';
+  } else {
+   var funcName = 'addGallery';
+   var initColor = 'green';
+  }
+  mystr = mystr + '<tr><td align=right>';
+  mystr = mystr + '<span style="color: green;">' + k + '</span>';
+  mystr = mystr + '</td><td>';
+  mystr = mystr + '<span class=controls>';
+  mystr = mystr + ' [<a href="#" onclick="control(\'resetCounters\', \'' + k + '\');" title="Reset Counters" class=controls>RC</a>]';
+  mystr = mystr + ' [<a href="#" onclick="control(\'' + funcName + '\',\'' + k + '\'); return false;" style="color: ' + initColor + ';" class=controls>Inc</a>]';
+  mystr = mystr + ' [<a href="#" onclick="control(\'moveImageHere\', \'' + k + '\');" title="Move Image Here" class=controls>MV</a>]';
+  mystr = mystr + '</span>';
+  mystr = mystr + '</td></tr>';
+ });
+ mystr = mystr + '</table>';
+ mystr = mystr + '</td></tr></table>';
+ $('#gallerylist').html(mystr);
 }
 
 function doDisplay(str,delay) {
@@ -148,6 +174,9 @@ function changeImagePersist() {
 <center><span id="progressBar"><span id="progressFill">&nbsp;</span></span></center>
 <center>[ <a href="#" onclick="control('emptyQueue');">Empty Queue</a> | <a href="#" onclick="control('resetCounters');">Reset global counters</a> | <a href="#" onclick="control('unsortImage');">Unsort Image</a> | Time Per Image: <input type=text id="imagePersistenceInput" onchange="changeImagePersist();"> ]</center>
 <center><h3><div id=data></div></h3></center>
+<center><table border=0 cellpadding=0 cellspacing=0><tr><td>
 <center><div id=gallerylist></div></center>
+</td><td>
 <center><h3><div id=taglist></div></h3></center>
+</td></tr></table></center>
 </body></html>

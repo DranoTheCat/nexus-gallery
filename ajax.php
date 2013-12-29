@@ -12,10 +12,21 @@ if ($command) {
 } else
  echo json();
 
+function ajax_moveImage() {
+ global $ng;
+ $ng->moveImage($_GET['file'], $_GET['dest']);
+}
+
 function ajax_emptyQueue() {
  global $ng;
  $ng->truncateQueue();
  echo json(array('mode'=>'display', 'string'=>"Emptied the queue", 'delay'=>3));
+} 
+
+function ajax_unsortImage() {
+ global $ng;
+ $ng->unsortImage();
+ echo json(array('mode'=>'display', 'string'=>"Unsorted Image", 'delay'=>3));
 } 
 
 function ajax_thumbsUp() {
@@ -32,8 +43,13 @@ function ajax_thumbsDown() {
 
 function ajax_resetCounters() {
  global $ng;
- $ng->resetImageCounters();
- echo json(array('mode'=>'display', 'string'=>"Reset all image counters", 'delay'=>3));
+ if ($_GET['param']) {
+  $ng->resetImageCounters($_GET['param']);
+  echo json(array('mode'=>'display', 'string'=>"Reset image counters for " . $_GET['param'], 'delay'=>3));
+ } else {
+  $ng->resetImageCounters();
+  echo json(array('mode'=>'display', 'string'=>"Reset all image counters", 'delay'=>3));
+ }
 }
 
 function ajax_imagePersistence() {

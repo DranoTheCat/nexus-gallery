@@ -8,7 +8,8 @@
 
 #  $ng->debugQueue();
   list($image, $time_till_next) = $ng->getImage();
-  $ng->debugQueue();
+#  $ng->debugQueue();
+  print_r($ng->listExcludedGalleries());
   echo "Image: $image\n";
 
 #  $galleries = $ng->listAllGalleries(); 

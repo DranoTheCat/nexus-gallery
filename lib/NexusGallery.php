@@ -1,7 +1,6 @@
 <?php
 
 // TODO: method for get number of views
-// TODO: Galleries with spaces in them don't get saved properly?
 
 class NexusGallery {
 
@@ -168,6 +167,43 @@ class NexusGallery {
     return $galleries;
   }
 
+  public function moveImage($image = 'current', $dest) {
+    if ($this->debug) echo "[ Moving $image to $dest ]";
+
+    if ($image == 'current')
+      list($image, $time_till_next) = $this->getImage();
+
+    $filename = basename($image);
+    rename($image, $dest . "/" . $filename);
+  }
+
+  public function getImageToSort($base = 'default') {
+    if ($base == 'default')
+      $base = $this->config['incoming_base'];
+    if ($this->debug) echo "[ Retrieving next image to sort for $base ]\n";
+
+    if ($handle = opendir($base) or die()) {
+      while (false !== ($entry = readdir($handle))) {
+        if ($entry == '.' || $entry == '..') continue;
+        if (is_dir($path . "/" . $entry)) {
+          $next = $this->getImageToSort($path . "/" . $entry);
+          if ($next)
+            return $next;
+        } else {
+          if ($path)
+            return $this->config['incoming_base'] . "/" . $path . "/" . $entry;
+          else
+            return $this->config['incoming_base'] . "/" . $entry;
+        }
+      }
+    }
+  }
+
+  public function listExcludedGalleries() {
+    if ($this->debug) echo "[ Listing Excluded Galleries ]\n";
+    return $this->excluded_galleries; 
+  }
+
   public function listAllGalleries() {
     if ($this->debug) echo "[ Listing Galleries ]\n";
 
@@ -290,7 +326,7 @@ class NexusGallery {
   }
 
   protected function configChomp($v) { # Strips spaces so split will work correctly
-    $this->config[$v] = preg_replace("/\s+/", '', $this->config[$v]);
+    $this->config[$v] = preg_replace("/,\s+/", ',', $this->config[$v]);  # Need only find spaces after a comma, though....
   }
 
   protected function nextImageCacheCount() {

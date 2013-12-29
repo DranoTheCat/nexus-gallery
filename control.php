@@ -17,27 +17,61 @@ body,html {
  background-color: black;
  color: white;
 }
+#progressBar {
+ position: relative;
+ display: inline-block;
+ width: 400px;
+ height: 26px;
+ border: 1px solid #000;
+ background-color: #666;
+}
+
+#progressFill {
+ position: relative;
+ display: inline-block;
+ left: 1px;
+ width: 0px;
+ height: 26px;
+ overflow: hidden;
+ background-color: #0a0;
+ font-family: Arial, Helvetica, sans-serif;
+ font-size: 24px;
+ float: left;
+}
+
+#imagePersistenceInput {
+ background-color: #888;
+ color: white;
+ border: 1px solid #bbb;
+ width: 40px;
+}
 </style>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script type="text/javascript">
+var image_persistence = <? echo $ng->getConfig('image_persistence'); ?>;
 $(function() {
  timerAjax();
+ control('populateGalleries');
+ $('#imagePersistenceInput').val(image_persistence);
 });
 $.ajaxSetup({ cache: false });
 var ajaxInAction = false;
+var ajaxTimer = false;
 function timerAjax() {
  if (ajaxInAction) { return; }
+ clearTimeout(ajaxTimer);
  ajaxInAction = true;
  $.ajax({
   url: "ajax.php",
   success: function(result){
    var jsonData = eval('(' + result + ')');
    var timeLeft = jsonData['timeLeft'] * 1000;
+   progressBar(jsonData['timeLeft']);
 
    document.getElementById('image').innerHTML = jsonData['imageName'];
    document.getElementById('taglist').innerHTML = jsonData['tags'];
 
-   setTimeout('timerAjax();', timeLeft);
+   ajaxTimer = setTimeout('timerAjax();', timeLeft+1000);
    ajaxInAction = false;
   }
  });
@@ -49,13 +83,18 @@ function control(command,param) {
   url: "ajax.php?command=" + command + "&param=" + param,
   success: function(result){
    var jsonData = eval('(' + result + ')');
+   if (jsonData['image_persistence']) {
+    if (jsonData['image_persistence'] != image_persistence) doDisplay("Image Persistence Changed To: " + jsonData['image_persistence']);
+    image_persistence = jsonData['image_persistence'];
+    $('#imagePersistenceInput').val(image_persistence);
+    timerAjax();
+   }
    if (jsonData['mode'] == 'alert') {
     alert(jsonData['string']);
    } else if (jsonData['mode'] == 'display') {
-    $('#data').append('<div id="display' + displayId + '">' + jsonData['string'] + '</div>');
-    setTimeout("removeDiv('display" + displayId + "');", 1000*jsonData['delay']);
+    doDisplay(jsonData['string'], jsonData['delay']);
    } else if (jsonData['mode'] == 'populateGalleries') {
-    var mystr = '';
+    var mystr = '<table><tr><td>';
     $.each(jsonData['galleries'], function(k, v) {
      if (v) {
       mystr = mystr + '<a href="#" onclick="control(\'removeGallery\',\'' + k + '\'); return false;" style="color: purple;">' + k + '</a><br>';
@@ -63,21 +102,52 @@ function control(command,param) {
       mystr = mystr + '<a href="#" onclick="control(\'addGallery\',\'' + k + '\'); return false;" style="color: green;">' + k + '</a><br>';
      }
     });
+    mystr = mystr + '</td></tr></table>';
     $('#gallerylist').html(mystr);
    }
   }
  });
 }
 
+function doDisplay(str,delay) {
+ if (!delay) delay = 5;
+ $('#data').append('<div id="display' + displayId + '">' + str + '</div>');
+ setTimeout("removeDiv('display" + displayId + "');", 1000*delay);
+ displayId = displayId + 1;
+}
+
+var progressTimer = false;
+function progressBar(remainingTime) {
+ clearTimeout(progressTimer);
+ var percent = (remainingTime / image_persistence) * 100;
+ var barWidth = $('#progressBar').width()-2;
+ var pixelsPerPercent = barWidth / 100;
+ var newWidth = Math.floor(pixelsPerPercent * percent);
+  
+ $('#progressFill').animate({"width":newWidth+"px"},"slow");
+ var remMinusOne = remainingTime - 1;
+ progressTimer = setTimeout("progressBar("+remMinusOne+")", 1000);
+}
+
 function removeDiv(id) {
  $('#' + id).remove();
 }
 
+var ipTimer = false;
+function changeImagePersist() {
+ var newValue = $('#imagePersistenceInput').val();
+ if (!newValue) return;
+ if (!$.isNumeric(newValue)) return; 
+ if (newValue <= 0) return;
+ control('imagePersistence', newValue);
+}
+
 </script>
 </head><body>
-<center><h1><div id=image></div></h1></center>
-<center><h3><div id=taglist></div></h3></center>
+<center><h1><a href="#" onclick="control('thumbsDown');"><img src="images/thumbsDown.png" width=24 height=24></a>&nbsp;&nbsp;<span id=image></span>&nbsp;&nbsp;<a href="#" onclick="control('thumbsUp');"><img src="images/thumbsUp.png" width=24 height=24></a></h1></center>
+<center><span id="progressBar"><span id="progressFill">&nbsp;</span></span></center>
+<center>[ <a href="#" onclick="control('emptyQueue');">Empty Queue</a> | <a href="#" onclick="control('resetCounters');">Reset global counters</a> | <a href="#" onclick="control('unsortImage');">Unsort Image</a> | Time Per Image: <input type=text id="imagePersistenceInput" onchange="changeImagePersist();"> ]</center>
 <center><h3><div id=data></div></h3></center>
-<center>[ <a href="#" onclick="control('populateGalleries'); return false;">Galleries</a> | <a href="#" onclick="control('emptyQueue');">Empty Queue</a> | <a href="#" onclick="control('resetCounters');">Reset Counters</a> | <a href="#" onclick="control('thumbsUp'); return false;">+</a> | <a href="#" onclick="control('thumbsDown'); return false;">-</a> ]</center>
 <center><div id=gallerylist></div></center>
+<center><h3><div id=taglist></div></h3></center>
 </body></html>

@@ -1,6 +1,7 @@
 <?php
 
 // TODO: method for get number of views
+// TODO: Galleries with spaces in them don't get saved properly?
 
 class NexusGallery {
 

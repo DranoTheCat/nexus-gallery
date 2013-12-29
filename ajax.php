@@ -36,6 +36,13 @@ function ajax_resetCounters() {
  echo json(array('mode'=>'display', 'string'=>"Reset all image counters", 'delay'=>3));
 }
 
+function ajax_imagePersistence() {
+ global $ng;
+ $ng->setImagePersistence($_GET['param']);
+ $ng->truncateQueue();
+ echo json(array('image_persistence'=>$_GET['param']));
+}
+
 function ajax_addGallery() {
  global $ng,$_GET;
  $galleries = $ng->listAllGalleries();

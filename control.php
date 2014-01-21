@@ -54,10 +54,17 @@ body,html {
 a.controls {
  color: #888;
 }
+
+#taglist {
+ max-width: 300px;
+ margin-left: 50px;
+}
 </style>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script type="text/javascript">
 var image_persistence = <?php echo $ng->getConfig('image_persistence'); ?>;
+var enabledTags = [ ];
+var tags = [ ];
 $(function() {
  timerAjax();
  control('populateGalleries');
@@ -78,7 +85,10 @@ function timerAjax() {
    progressBar(jsonData['timeLeft']);
 
    document.getElementById('image').innerHTML = jsonData['imageName'];
-   document.getElementById('taglist').innerHTML = jsonData['tags'];
+   if (jsonData['enabledTags']) {
+    enabledTags = jsonData['enabledTags'];
+    populateTags();
+   }
 
    ajaxTimer = setTimeout('timerAjax();', timeLeft+1000);
    ajaxInAction = false;
@@ -86,6 +96,7 @@ function timerAjax() {
  });
 }
 
+var excludes = false;
 var displayId = 1;
 function control(command,param) {
  $.ajax({
@@ -98,6 +109,17 @@ function control(command,param) {
     $('#imagePersistenceInput').val(image_persistence);
     timerAjax();
    }
+   if (jsonData['tags']) {
+    tags = jsonData['tags'];
+   }
+   if (jsonData['enabledTags']) {
+    enabledTags = jsonData['enabledTags'];
+    populateTags();
+   }
+   if (jsonData['excludes']) {
+    excludes = jsonData['excludes'];
+   }
+   if (jsonData['js']) eval(jsonData['js']);
    if (jsonData['mode'] == 'alert') {
     alert(jsonData['string']);
    } else if (jsonData['mode'] == 'display') {
@@ -109,8 +131,32 @@ function control(command,param) {
  });
 }
 
+function addNewTag() {
+ control('addTag',$('#newtag').val());
+}
+
+function populateTags() {
+ var mystr = '<table><tr><td>';
+ var first = true;
+ var pcmd = '';
+ $.each(tags, function(k,v) {
+  var sty = '';
+  if ($.inArray(v, enabledTags) !== -1) { 
+   sty = ' style="color: green;"';
+   pcmd = 'remTag';
+  } else {
+   pcmd = 'addTag'; 
+  }
+  if (!first) mystr = mystr + ', ';
+  first = false;
+  mystr = mystr + '<a href="#" onclick="control(\'' + pcmd + '\',\''+v+'\');" title="' + v + '"' + sty + '>' + v + '</a>';
+ });
+ mystr = mystr + '</td></tr></table>';
+ $('#taglist').html(mystr);
+}
+
 function populateGalleries(galleries) {
- var mystr = '<table border=2><tr><td>';
+ var mystr = '<table><tr><td>';
  var mystr = '<table>';
  $.each(galleries, function(k, v) {
   if (v) {
@@ -126,6 +172,11 @@ function populateGalleries(galleries) {
   mystr = mystr + '<span class=controls>';
   mystr = mystr + ' [<a href="#" onclick="control(\'resetCounters\', \'' + k + '\');" title="Reset Counters" class=controls>RC</a>]';
   mystr = mystr + ' [<a href="#" onclick="control(\'' + funcName + '\',\'' + k + '\'); return false;" style="color: ' + initColor + ';" class=controls>Inc</a>]';
+  if ($.inArray(k, excludes) !== -1) {
+   mystr = mystr + ' [<a href="#" onclick="control(\'unExclude\',\'' + k + '\'); return false;" style="color: purple;" class=controls>Exc</a>]';
+  } else {
+   mystr = mystr + ' [<a href="#" onclick="control(\'exclude\',\'' + k + '\'); return false;" style="color: green;" class=controls>Exc</a>]';
+  }
   mystr = mystr + ' [<a href="#" onclick="control(\'moveImageHere\', \'' + k + '\');" title="Move Image Here" class=controls>MV</a>]';
   mystr = mystr + '</span>';
   mystr = mystr + '</td></tr>';
@@ -133,6 +184,7 @@ function populateGalleries(galleries) {
  mystr = mystr + '</table>';
  mystr = mystr + '</td></tr></table>';
  $('#gallerylist').html(mystr);
+ populateTags();
 }
 
 function doDisplay(str,delay) {
@@ -176,7 +228,8 @@ function changeImagePersist() {
 <center><h3><div id=data></div></h3></center>
 <center><table border=0 cellpadding=0 cellspacing=0><tr><td>
 <center><div id=gallerylist></div></center>
-</td><td>
+</td><td valign=top>
+<center><input type=text id=newtag onchange="addNewTag();"></center>
 <center><h3><div id=taglist></div></h3></center>
 </td></tr></table></center>
 </body></html>

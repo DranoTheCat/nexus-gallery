@@ -59,6 +59,44 @@ function ajax_imagePersistence() {
  echo json(array('image_persistence'=>$_GET['param']));
 }
 
+function ajax_addTag() {
+ global $ng;
+ $ng->addTag($_GET['param']);
+ $tags = $ng->listAllTags();
+ echo json(array('mode'=>'display', 'string'=>"Added Tag " . $_GET['param'], 'delay'=>3, 'tags'=>$tags, 'js'=>'$(\'#newtag\').val(\'\');'));
+}
+
+function ajax_remTag() {
+ global $ng;
+ $ng->removeTag($_GET['param']);
+ $tags = $ng->listAllTags();
+ echo json(array('mode'=>'display', 'string'=>"Removed Tag " . $_GET['param'], 'delay'=>3, 'tags'=>$tags, 'js'=>'$(\'#newtag\').val(\'\');'));
+}
+
+function ajax_exclude() {
+ global $ng;
+ $newExclude = $_GET['param'];
+ $excludes = $ng->listExcludedGalleries();
+ if (in_array($newExclude, $excludes)) { ajax_error("Gallery already excluded."); return; }
+ $excludes[] = $newExclude;
+ $ng->setExcludedGalleries($excludes);
+ ajax_populateGalleries();
+}
+
+function ajax_unExclude() {
+ global $ng;
+ $exclude = $_GET['param'];
+ $excludes = $ng->listExcludedGalleries();
+ if (!in_array($exclude, $excludes)) { ajax_error("Gallery is not excluded."); return; }
+ $newExcludes = array();
+ foreach ($excludes as $k => $v) {
+  if ($v == $exclude) continue;
+  $newExcludes[] = $v;
+ }
+ $ng->setExcludedGalleries($newExcludes);
+ ajax_populateGalleries();
+}
+
 function ajax_addGallery() {
  global $ng,$_GET;
  $galleries = $ng->listAllGalleries();
@@ -91,7 +129,9 @@ function ajax_removeGallery() {
 function ajax_populateGalleries() {
  global $ng;
  $galleries = $ng->listAllGalleries();
- echo json(array('mode'=>'populateGalleries','galleries'=>$galleries));
+ $excludes = $ng->listExcludedGalleries();
+ $tags = $ng->listAllTags();
+ echo json(array('mode'=>'populateGalleries','galleries'=>$galleries,'excludes'=>$excludes,'tags'=>$tags));
 }
 
 function ajax_error($string) {
@@ -101,6 +141,7 @@ function ajax_error($string) {
 function json($data = array()) {
  global $ng;
  $next = $ng->getImage();
+ $itags = $ng->listImageTags();
  return
   json_encode(
    array_merge(
@@ -110,7 +151,7 @@ function json($data = array()) {
      'image'=>$next[0],
      'timeLeft'=>$next[1],
      'imageName'=>basename($next[0]),
-     'tags'=>implode(', ', $ng->listImageTags())
+     'enabledTags'=>$itags
     )
    )
   );

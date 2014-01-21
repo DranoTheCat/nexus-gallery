@@ -142,9 +142,10 @@ function populateTags() {
  $.each(tags, function(k,v) {
   var sty = '';
   if ($.inArray(v, enabledTags) !== -1) { 
-   sty = ' style="color: green;"';
+   sty = ' style="color: green; text-decoration: none;"';
    pcmd = 'remTag';
   } else {
+   sty = ' style="color: #aaa; text-decoration: none;"';
    pcmd = 'addTag'; 
   }
   if (!first) mystr = mystr + ', ';
